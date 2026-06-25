@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "AI Video Generator"
+version = "1.0.0"
+id = "artifacts/video-gen"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22577
+
+[services.development]
+run = "pnpm --filter @workspace/video-gen run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/video-gen", "run", "build" ]
+publicDir = "artifacts/video-gen/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22577"
+BASE_PATH = "/"

@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: jobs
+    description: Video generation job operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,103 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /jobs:
+    get:
+      operationId: listJobs
+      tags: [jobs]
+      summary: List all jobs
+      description: Returns all video generation jobs across all queue stages
+      responses:
+        "200":
+          description: List of jobs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobs:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Job"
+                required:
+                  - jobs
+    post:
+      operationId: createJob
+      tags: [jobs]
+      summary: Create a video generation job
+      description: Enqueues a new AI video generation job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateJobRequest"
+      responses:
+        "201":
+          description: Job created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+
+  /jobs/{id}:
+    get:
+      operationId: getJob
+      tags: [jobs]
+      summary: Get job by ID
+      description: Returns a single job with its current status and progress
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Job found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /jobs/{id}/cancel:
+    post:
+      operationId: cancelJob
+      tags: [jobs]
+      summary: Cancel a queued job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Job cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Job cannot be cancelled in its current state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +133,72 @@ components:
       required:
         - status
 
+    JobStatus:
+      type: string
+      enum:
+        - queued
+        - processing
+        - done
+        - failed
+        - cancelled
+
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+        prompt:
+          type: string
+        duration:
+          type: integer
+        resolutionWidth:
+          type: integer
+        resolutionHeight:
+          type: integer
+        status:
+          $ref: "#/components/schemas/JobStatus"
+        progress:
+          type: integer
+          description: Progress percentage 0-100
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        errorMessage:
+          type: string
+          nullable: true
+      required:
+        - id
+        - prompt
+        - duration
+        - resolutionWidth
+        - resolutionHeight
+        - status
+        - progress
+        - createdAt
+        - updatedAt
+
+    CreateJobRequest:
+      type: object
+      properties:
+        prompt:
+          type: string
+        duration:
+          type: integer
+          default: 5
+        resolutionWidth:
+          type: integer
+          default: 720
+        resolutionHeight:
+          type: integer
+          default: 1280
+      required:
+        - prompt
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

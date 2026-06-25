@@ -12,13 +12,14 @@ tags:
     description: Health operations
   - name: jobs
     description: Video generation job operations
+  - name: webhooks
+    description: Webhook notification endpoints
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -32,7 +33,6 @@ paths:
       operationId: listJobs
       tags: [jobs]
       summary: List all jobs
-      description: Returns all video generation jobs across all queue stages
       responses:
         "200":
           description: List of jobs
@@ -51,7 +51,6 @@ paths:
       operationId: createJob
       tags: [jobs]
       summary: Create a video generation job
-      description: Enqueues a new AI video generation job
       requestBody:
         required: true
         content:
@@ -71,7 +70,6 @@ paths:
       operationId: getJob
       tags: [jobs]
       summary: Get job by ID
-      description: Returns a single job with its current status and progress
       parameters:
         - name: id
           in: path
@@ -117,7 +115,104 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "409":
-          description: Job cannot be cancelled in its current state
+          description: Cannot cancel in current state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /webhooks:
+    get:
+      operationId: listWebhooks
+      tags: [webhooks]
+      summary: List all registered webhooks
+      responses:
+        "200":
+          description: List of webhooks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  webhooks:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Webhook"
+                required:
+                  - webhooks
+    post:
+      operationId: createWebhook
+      tags: [webhooks]
+      summary: Register a new webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookInput"
+      responses:
+        "201":
+          description: Webhook registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Webhook"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /webhooks/{id}:
+    delete:
+      operationId: deleteWebhook
+      tags: [webhooks]
+      summary: Remove a registered webhook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Webhook deleted
+        "404":
+          description: Webhook not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /webhooks/{id}/test:
+    post:
+      operationId: testWebhook
+      tags: [webhooks]
+      summary: Send a test ping to a webhook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Test sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  statusCode:
+                    type: integer
+                required:
+                  - ok
+                  - statusCode
+        "404":
+          description: Webhook not found
           content:
             application/json:
               schema:
@@ -159,14 +254,12 @@ components:
           $ref: "#/components/schemas/JobStatus"
         progress:
           type: integer
-          description: Progress percentage 0-100
         createdAt:
           type: string
         updatedAt:
           type: string
         errorMessage:
-          type: string
-          nullable: true
+          type: ["string", "null"]
       required:
         - id
         - prompt
@@ -194,6 +287,49 @@ components:
           default: 1280
       required:
         - prompt
+
+    WebhookEvent:
+      type: string
+      enum:
+        - job.done
+        - job.failed
+        - job.all
+
+    Webhook:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+        event:
+          $ref: "#/components/schemas/WebhookEvent"
+        label:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        lastFiredAt:
+          type: ["string", "null"]
+        lastStatusCode:
+          type: ["integer", "null"]
+      required:
+        - id
+        - url
+        - event
+        - createdAt
+
+    WebhookInput:
+      type: object
+      properties:
+        url:
+          type: string
+        event:
+          $ref: "#/components/schemas/WebhookEvent"
+        label:
+          type: string
+      required:
+        - url
+        - event
 
     ErrorResponse:
       type: object

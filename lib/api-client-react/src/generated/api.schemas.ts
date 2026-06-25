@@ -27,10 +27,10 @@ export interface Job {
   resolutionWidth: number;
   resolutionHeight: number;
   status: JobStatus;
-  /** Progress percentage 0-100 */
   progress: number;
   createdAt: string;
   updatedAt: string;
+  /** @nullable */
   errorMessage?: string | null;
 }
 
@@ -41,11 +41,48 @@ export interface CreateJobRequest {
   resolutionHeight?: number;
 }
 
+export type WebhookEvent = typeof WebhookEvent[keyof typeof WebhookEvent];
+
+
+export const WebhookEvent = {
+  jobdone: 'job.done',
+  jobfailed: 'job.failed',
+  joball: 'job.all',
+} as const;
+
+export interface Webhook {
+  id: string;
+  url: string;
+  event: WebhookEvent;
+  /** @nullable */
+  label?: string | null;
+  createdAt: string;
+  /** @nullable */
+  lastFiredAt?: string | null;
+  /** @nullable */
+  lastStatusCode?: number | null;
+}
+
+export interface WebhookInput {
+  url: string;
+  event: WebhookEvent;
+  label?: string;
+}
+
 export interface ErrorResponse {
   error: string;
 }
 
 export type ListJobs200 = {
   jobs: Job[];
+};
+
+export type ListWebhooks200 = {
+  webhooks: Webhook[];
+};
+
+export type TestWebhook200 = {
+  ok: boolean;
+  statusCode: number;
 };
 

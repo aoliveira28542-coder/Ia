@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import JobsList from "@/pages/jobs";
 import JobDetail from "@/pages/job-detail";
+import Webhooks from "@/pages/webhooks";
 import { Layout } from "@/components/layout";
 
 const queryClient = new QueryClient();
@@ -17,6 +18,7 @@ function Router() {
         <Route path="/" component={Dashboard} />
         <Route path="/jobs" component={JobsList} />
         <Route path="/jobs/:id" component={JobDetail} />
+        <Route path="/webhooks" component={Webhooks} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

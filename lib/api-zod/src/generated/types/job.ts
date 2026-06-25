@@ -14,9 +14,9 @@ export interface Job {
   resolutionWidth: number;
   resolutionHeight: number;
   status: JobStatus;
-  /** Progress percentage 0-100 */
   progress: number;
   createdAt: string;
   updatedAt: string;
+  /** @nullable */
   errorMessage?: string | null;
 }

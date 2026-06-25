@@ -9,7 +9,6 @@ import * as zod from 'zod';
 
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
@@ -18,7 +17,6 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
- * Returns all video generation jobs across all queue stages
  * @summary List all jobs
  */
 export const ListJobsResponse = zod.object({
@@ -29,7 +27,7 @@ export const ListJobsResponse = zod.object({
   "resolutionWidth": zod.number(),
   "resolutionHeight": zod.number(),
   "status": zod.enum(['queued', 'processing', 'done', 'failed', 'cancelled']),
-  "progress": zod.number().describe('Progress percentage 0-100'),
+  "progress": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()
@@ -38,7 +36,6 @@ export const ListJobsResponse = zod.object({
 
 
 /**
- * Enqueues a new AI video generation job
  * @summary Create a video generation job
  */
 export const createJobBodyDurationDefault = 5;
@@ -59,7 +56,7 @@ export const CreateJobResponse = zod.object({
   "resolutionWidth": zod.number(),
   "resolutionHeight": zod.number(),
   "status": zod.enum(['queued', 'processing', 'done', 'failed', 'cancelled']),
-  "progress": zod.number().describe('Progress percentage 0-100'),
+  "progress": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()
@@ -67,7 +64,6 @@ export const CreateJobResponse = zod.object({
 
 
 /**
- * Returns a single job with its current status and progress
  * @summary Get job by ID
  */
 export const GetJobParams = zod.object({
@@ -81,7 +77,7 @@ export const GetJobResponse = zod.object({
   "resolutionWidth": zod.number(),
   "resolutionHeight": zod.number(),
   "status": zod.enum(['queued', 'processing', 'done', 'failed', 'cancelled']),
-  "progress": zod.number().describe('Progress percentage 0-100'),
+  "progress": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()
@@ -102,10 +98,69 @@ export const CancelJobResponse = zod.object({
   "resolutionWidth": zod.number(),
   "resolutionHeight": zod.number(),
   "status": zod.enum(['queued', 'processing', 'done', 'failed', 'cancelled']),
-  "progress": zod.number().describe('Progress percentage 0-100'),
+  "progress": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()
+})
+
+
+/**
+ * @summary List all registered webhooks
+ */
+export const ListWebhooksResponse = zod.object({
+  "webhooks": zod.array(zod.object({
+  "id": zod.string(),
+  "url": zod.string(),
+  "event": zod.enum(['job.done', 'job.failed', 'job.all']),
+  "label": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "lastFiredAt": zod.string().nullish(),
+  "lastStatusCode": zod.number().nullish()
+}))
+})
+
+
+/**
+ * @summary Register a new webhook
+ */
+export const CreateWebhookBody = zod.object({
+  "url": zod.string(),
+  "event": zod.enum(['job.done', 'job.failed', 'job.all']),
+  "label": zod.string().optional()
+})
+
+export const CreateWebhookResponse = zod.object({
+  "id": zod.string(),
+  "url": zod.string(),
+  "event": zod.enum(['job.done', 'job.failed', 'job.all']),
+  "label": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "lastFiredAt": zod.string().nullish(),
+  "lastStatusCode": zod.number().nullish()
+})
+
+
+/**
+ * @summary Remove a registered webhook
+ */
+export const DeleteWebhookParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteWebhookResponse = zod.void()
+
+
+/**
+ * @summary Send a test ping to a webhook
+ */
+export const TestWebhookParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const TestWebhookResponse = zod.object({
+  "ok": zod.boolean(),
+  "statusCode": zod.number()
 })
 
 

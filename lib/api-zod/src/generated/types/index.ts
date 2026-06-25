@@ -12,3 +12,8 @@ export * from './healthStatus';
 export * from './job';
 export * from './jobStatus';
 export * from './listJobs200';
+export * from './listWebhooks200';
+export * from './testWebhook200';
+export * from './webhook';
+export * from './webhookEvent';
+export * from './webhookInput';

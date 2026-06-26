@@ -29,6 +29,14 @@ export const jobsTable = pgTable("jobs", {
   presetName: text("preset_name"),
   referenceImages: json("reference_images").$type<string[]>().default([]),
   characterIds: json("character_ids").$type<string[]>().default([]),
+  // Visual style
+  visualStyle: text("visual_style"),
+  colorGrade: text("color_grade"),
+  camera: text("camera"),
+  quality: text("quality").default("standard"),
+  // Scene orchestration
+  sceneCount: integer("scene_count"),
+  currentScene: integer("current_scene"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

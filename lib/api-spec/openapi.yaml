@@ -351,6 +351,43 @@ paths:
               schema:
                 $ref: "#/components/schemas/SystemMetrics"
 
+  /jobs/{id}/storyboard:
+    get:
+      operationId: getJobStoryboard
+      tags: [jobs]
+      summary: Get the storyboard scenes for a job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Storyboard scenes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scenes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StoryboardScene"
+                  memory:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SceneMemory"
+                required:
+                  - scenes
+                  - memory
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /jobs/{id}/assets:
     get:
       operationId: listJobAssets
@@ -599,6 +636,18 @@ components:
           type: array
           items:
             type: string
+        visualStyle:
+          type: ["string", "null"]
+        colorGrade:
+          type: ["string", "null"]
+        camera:
+          type: ["string", "null"]
+        quality:
+          type: ["string", "null"]
+        sceneCount:
+          type: ["integer", "null"]
+        currentScene:
+          type: ["integer", "null"]
       required:
         - id
         - prompt
@@ -749,6 +798,86 @@ components:
         - video
         - thumbnail
 
+    StoryboardScene:
+      type: object
+      properties:
+        id:
+          type: string
+        jobId:
+          type: string
+        sceneNumber:
+          type: integer
+        scenePrompt:
+          type: string
+        duration:
+          type: integer
+        camera:
+          type: string
+        lighting:
+          type: string
+        characters:
+          type: array
+          items:
+            type: string
+        style:
+          type: object
+          additionalProperties:
+            type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - jobId
+        - sceneNumber
+        - scenePrompt
+        - duration
+        - camera
+        - lighting
+        - characters
+        - style
+        - status
+        - createdAt
+
+    SceneMemory:
+      type: object
+      properties:
+        id:
+          type: string
+        jobId:
+          type: string
+        sceneNumber:
+          type: integer
+        characterStates:
+          type: object
+          additionalProperties:
+            type: string
+        environment:
+          type: string
+        camera:
+          type: string
+        lighting:
+          type: string
+        style:
+          type: object
+          additionalProperties:
+            type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - jobId
+        - sceneNumber
+        - characterStates
+        - environment
+        - camera
+        - lighting
+        - style
+        - createdAt
+
     GenerationPreset:
       type: object
       properties:
@@ -891,6 +1020,15 @@ components:
           type: array
           items:
             type: string
+        visualStyle:
+          type: string
+        colorGrade:
+          type: string
+        camera:
+          type: string
+        quality:
+          type: string
+          default: standard
       required:
         - prompt
 

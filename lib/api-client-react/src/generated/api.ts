@@ -359,6 +359,76 @@ export function useGetJob<TData = Awaited<ReturnType<typeof getJob>>, TError = E
 
 
 
+export const getRetryJobUrl = (id: string,) => {
+
+
+
+
+  return `/api/jobs/${id}/retry`
+}
+
+/**
+ * @summary Retry a failed or cancelled job
+ */
+export const retryJob = async (id: string, options?: RequestInit): Promise<Job> => {
+
+  return customFetch<Job>(getRetryJobUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getRetryJobMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof retryJob>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof retryJob>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['retryJob'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof retryJob>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  retryJob(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RetryJobMutationResult = NonNullable<Awaited<ReturnType<typeof retryJob>>>
+
+    export type RetryJobMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Retry a failed or cancelled job
+ */
+export const useRetryJob = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof retryJob>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof retryJob>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getRetryJobMutationOptions(options));
+    }
+
 export const getCancelJobUrl = (id: string,) => {
 
 

@@ -85,6 +85,27 @@ export const GetJobResponse = zod.object({
 
 
 /**
+ * @summary Retry a failed or cancelled job
+ */
+export const RetryJobParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const RetryJobResponse = zod.object({
+  "id": zod.string(),
+  "prompt": zod.string(),
+  "duration": zod.number(),
+  "resolutionWidth": zod.number(),
+  "resolutionHeight": zod.number(),
+  "status": zod.enum(['queued', 'processing', 'done', 'failed', 'cancelled']),
+  "progress": zod.number(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "errorMessage": zod.string().nullish()
+})
+
+
+/**
  * @summary Cancel a queued job
  */
 export const CancelJobParams = zod.object({

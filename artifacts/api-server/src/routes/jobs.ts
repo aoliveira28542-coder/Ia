@@ -5,10 +5,12 @@ import {
   CreateJobBody,
   GetJobParams,
   CancelJobParams,
+  RetryJobParams,
   ListJobsResponse,
   GetJobResponse,
   CreateJobResponse,
   CancelJobResponse,
+  RetryJobResponse,
 } from "@workspace/api-zod";
 import { randomUUID } from "crypto";
 
@@ -85,6 +87,39 @@ router.get("/jobs/:id", async (req, res): Promise<void> => {
   }
 
   res.json(GetJobResponse.parse(toJobResponse(row)));
+});
+
+router.post("/jobs/:id/retry", async (req, res): Promise<void> => {
+  const params = RetryJobParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [existing] = await db
+    .select()
+    .from(jobsTable)
+    .where(eq(jobsTable.id, params.data.id));
+
+  if (!existing) {
+    res.status(404).json({ error: "Job not found" });
+    return;
+  }
+
+  if (existing.status !== "failed" && existing.status !== "cancelled") {
+    res.status(409).json({
+      error: `Cannot retry a job with status "${existing.status}"`,
+    });
+    return;
+  }
+
+  const [updated] = await db
+    .update(jobsTable)
+    .set({ status: "queued", progress: 0, errorMessage: null, updatedAt: new Date() })
+    .where(eq(jobsTable.id, params.data.id))
+    .returning();
+
+  res.json(RetryJobResponse.parse(toJobResponse(updated)));
 });
 
 router.post("/jobs/:id/cancel", async (req, res): Promise<void> => {

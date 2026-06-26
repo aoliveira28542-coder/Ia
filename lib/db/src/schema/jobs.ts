@@ -13,6 +13,7 @@ export const jobsTable = pgTable("jobs", {
   errorMessage: text("error_message"),
   retryCount: integer("retry_count").notNull().default(0),
   maxRetries: integer("max_retries").notNull().default(3),
+  priority: integer("priority").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

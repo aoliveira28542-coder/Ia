@@ -1,27 +1,62 @@
-import { eq, or, count } from "drizzle-orm";
+import { eq, or, count, desc, asc } from "drizzle-orm";
 import { db, jobsTable, jobAttemptsTable, webhooksTable } from "@workspace/db";
 import { logger } from "./logger";
 import { randomUUID } from "crypto";
 
 const TICK_INTERVAL_MS = 3000;
 const PROGRESS_STEP = 20;
-
 const workerStartedAt = Date.now();
 
-function formatUptime(ms: number): string {
-  const totalSeconds = Math.floor(ms / 1000);
+// ── Heartbeat state ──────────────────────────────────────────────────────────
+interface WorkerState {
+  lastHeartbeat: Date | null;
+  currentJobId: string | null;
+  processingStartedAt: Date | null;
+}
+
+const workerState: WorkerState = {
+  lastHeartbeat: null,
+  currentJobId: null,
+  processingStartedAt: null,
+};
+
+// ── Cancel signal set ────────────────────────────────────────────────────────
+const cancelRequested = new Set<string>();
+
+export function requestCancel(jobId: string) {
+  cancelRequested.add(jobId);
+}
+
+// ── Exported state for status route ─────────────────────────────────────────
+export function getWorkerStatus() {
+  const uptimeMs = Date.now() - workerStartedAt;
+  const totalSeconds = Math.floor(uptimeMs / 1000);
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;
-  if (h > 0) return `${h}h${m}m`;
-  if (m > 0) return `${m}m${s}s`;
-  return `${s}s`;
+  const uptime = h > 0 ? `${h}h${m}m` : m > 0 ? `${m}m${s}s` : `${s}s`;
+
+  const memBytes = process.memoryUsage().rss;
+  const memMB = Math.round(memBytes / 1024 / 1024);
+
+  let processingTime: string | null = null;
+  if (workerState.processingStartedAt) {
+    const elapsed = Math.floor((Date.now() - workerState.processingStartedAt.getTime()) / 1000);
+    const pm = Math.floor(elapsed / 60);
+    const ps = elapsed % 60;
+    processingTime = pm > 0 ? `${pm}m${ps}s` : `${ps}s`;
+  }
+
+  return {
+    lastHeartbeat: workerState.lastHeartbeat?.toISOString() ?? null,
+    currentJobId: workerState.currentJobId,
+    memoryMB: memMB,
+    processingTime,
+    uptime,
+  };
 }
 
-export function getWorkerUptime(): string {
-  return formatUptime(Date.now() - workerStartedAt);
-}
-
+// ── Webhooks ─────────────────────────────────────────────────────────────────
 async function fireWebhooks(
   event: "job.done" | "job.failed",
   job: typeof jobsTable.$inferSelect,
@@ -29,12 +64,7 @@ async function fireWebhooks(
   const hooks = await db
     .select()
     .from(webhooksTable)
-    .where(
-      or(
-        eq(webhooksTable.event, event),
-        eq(webhooksTable.event, "job.all"),
-      ),
-    );
+    .where(or(eq(webhooksTable.event, event), eq(webhooksTable.event, "job.all")));
 
   const payload = {
     event,
@@ -68,7 +98,6 @@ async function fireWebhooks(
       } catch (err) {
         logger.warn({ err, webhookId: hook.id }, "Webhook delivery failed");
       }
-
       await db
         .update(webhooksTable)
         .set({ lastFiredAt: new Date(), lastStatusCode: statusCode })
@@ -77,22 +106,60 @@ async function fireWebhooks(
   );
 }
 
+// ── Attempt helpers ───────────────────────────────────────────────────────────
+async function closeOpenAttempt(
+  jobId: string,
+  result: "done" | "failed" | "cancelled",
+  now: Date,
+) {
+  const [open] = await db
+    .select()
+    .from(jobAttemptsTable)
+    .where(eq(jobAttemptsTable.jobId, jobId))
+    .orderBy(desc(jobAttemptsTable.attemptNumber))
+    .limit(1);
+
+  if (open && !open.completedAt) {
+    const durationMs = now.getTime() - open.startedAt.getTime();
+    await db
+      .update(jobAttemptsTable)
+      .set({ completedAt: now, durationMs, result })
+      .where(eq(jobAttemptsTable.id, open.id));
+  }
+}
+
+// ── Main tick ─────────────────────────────────────────────────────────────────
 async function processTick() {
+  workerState.lastHeartbeat = new Date();
+
+  // Priority queue: highest priority first, then oldest first
   const activeJobs = await db
     .select()
     .from(jobsTable)
-    .where(
-      or(
-        eq(jobsTable.status, "queued"),
-        eq(jobsTable.status, "processing"),
-      ),
-    );
+    .where(or(eq(jobsTable.status, "queued"), eq(jobsTable.status, "processing")))
+    .orderBy(desc(jobsTable.priority), asc(jobsTable.createdAt));
 
   for (const job of activeJobs) {
     const now = new Date();
 
+    // ── Cancel signal check (processing jobs) ─────────────────────────────
+    if (job.status === "processing" && cancelRequested.has(job.id)) {
+      cancelRequested.delete(job.id);
+      await closeOpenAttempt(job.id, "cancelled", now);
+      await db
+        .update(jobsTable)
+        .set({ status: "cancelled", updatedAt: now })
+        .where(eq(jobsTable.id, job.id));
+      logger.info({ jobId: job.id }, "Job cancelled mid-processing");
+      if (workerState.currentJobId === job.id) {
+        workerState.currentJobId = null;
+        workerState.processingStartedAt = null;
+      }
+      continue;
+    }
+
+    // ── queued → processing ───────────────────────────────────────────────
     if (job.status === "queued") {
-      // Find current attempt count for this job to determine attempt number
       const [existing] = await db
         .select({ cnt: count() })
         .from(jobAttemptsTable)
@@ -100,7 +167,6 @@ async function processTick() {
 
       const attemptNumber = (existing?.cnt ?? 0) + 1;
 
-      // Create attempt record
       await db.insert(jobAttemptsTable).values({
         id: randomUUID(),
         jobId: job.id,
@@ -113,39 +179,34 @@ async function processTick() {
         .set({ status: "processing", progress: 0, retryCount: attemptNumber - 1, updatedAt: now })
         .where(eq(jobsTable.id, job.id));
 
-      logger.info({ jobId: job.id, attemptNumber }, "Job started processing");
+      workerState.currentJobId = job.id;
+      workerState.processingStartedAt = now;
+      logger.info({ jobId: job.id, attemptNumber, priority: job.priority }, "Job started processing");
       continue;
     }
 
+    // ── processing → advance / done ───────────────────────────────────────
     if (job.status === "processing") {
+      if (workerState.currentJobId !== job.id) {
+        workerState.currentJobId = job.id;
+        workerState.processingStartedAt = now;
+      }
+
       const newProgress = Math.min(job.progress + PROGRESS_STEP, 100);
 
       if (newProgress >= 100) {
-        const completedAt = now;
-
-        // Find the open attempt for this job
-        const [openAttempt] = await db
-          .select()
-          .from(jobAttemptsTable)
-          .where(eq(jobAttemptsTable.jobId, job.id))
-          .orderBy(jobAttemptsTable.attemptNumber)
-          .limit(1);
-
-        if (openAttempt && !openAttempt.completedAt) {
-          const durationMs = completedAt.getTime() - openAttempt.startedAt.getTime();
-          await db
-            .update(jobAttemptsTable)
-            .set({ completedAt, durationMs, result: "done" })
-            .where(eq(jobAttemptsTable.id, openAttempt.id));
-        }
+        await closeOpenAttempt(job.id, "done", now);
 
         const [completed] = await db
           .update(jobsTable)
-          .set({ status: "done", progress: 100, updatedAt: completedAt })
+          .set({ status: "done", progress: 100, updatedAt: now })
           .where(eq(jobsTable.id, job.id))
           .returning();
 
+        workerState.currentJobId = null;
+        workerState.processingStartedAt = null;
         logger.info({ jobId: job.id }, "Job completed");
+
         if (completed) {
           fireWebhooks("job.done", completed).catch((err) =>
             logger.error({ err }, "Webhook dispatch error"),
@@ -161,11 +222,10 @@ async function processTick() {
   }
 }
 
+// ── Bootstrap ─────────────────────────────────────────────────────────────────
 export function startQueueWorker() {
   logger.info("Queue worker started");
   setInterval(() => {
-    processTick().catch((err) => {
-      logger.error({ err }, "Queue worker error");
-    });
+    processTick().catch((err) => logger.error({ err }, "Queue worker error"));
   }, TICK_INTERVAL_MS);
 }

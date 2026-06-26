@@ -30,6 +30,7 @@ export interface Job {
   progress: number;
   retryCount: number;
   maxRetries: number;
+  priority: number;
   createdAt: string;
   updatedAt: string;
   /** @nullable */
@@ -57,6 +58,13 @@ export interface SystemStatus {
   processing: number;
   failed: number;
   uptime: string;
+  /** @nullable */
+  lastHeartbeat: string | null;
+  /** @nullable */
+  currentJobId: string | null;
+  memoryMB: number;
+  /** @nullable */
+  processingTime?: string | null;
 }
 
 export interface CreateJobRequest {
@@ -64,6 +72,7 @@ export interface CreateJobRequest {
   duration?: number;
   resolutionWidth?: number;
   resolutionHeight?: number;
+  priority?: number;
 }
 
 export type WebhookEvent = typeof WebhookEvent[keyof typeof WebhookEvent];

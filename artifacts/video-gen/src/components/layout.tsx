@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { Film, LayoutDashboard, ListVideo, Webhook } from "lucide-react";
+import { Film, LayoutDashboard, ListVideo, Webhook, MonitorDot } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -10,6 +10,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Job Queue", href: "/jobs", icon: ListVideo },
     { name: "Webhooks", href: "/webhooks", icon: Webhook },
+    { name: "System", href: "/system", icon: MonitorDot },
   ];
 
   return (

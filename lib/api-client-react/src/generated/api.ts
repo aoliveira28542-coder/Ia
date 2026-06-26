@@ -594,7 +594,7 @@ export const getCancelJobUrl = (id: string,) => {
 }
 
 /**
- * @summary Cancel a queued job
+ * @summary Cancel a queued or processing job
  */
 export const cancelJob = async (id: string, options?: RequestInit): Promise<Job> => {
 
@@ -642,7 +642,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type CancelJobMutationError = ErrorType<ErrorResponse>
 
     /**
- * @summary Cancel a queued job
+ * @summary Cancel a queued or processing job
  */
 export const useCancelJob = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelJob>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}

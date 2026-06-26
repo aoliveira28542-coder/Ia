@@ -11,4 +11,5 @@ export interface CreateJobRequest {
   duration?: number;
   resolutionWidth?: number;
   resolutionHeight?: number;
+  priority?: number;
 }

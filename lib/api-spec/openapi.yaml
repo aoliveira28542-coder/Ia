@@ -170,7 +170,7 @@ paths:
     post:
       operationId: cancelJob
       tags: [jobs]
-      summary: Cancel a queued job
+      summary: Cancel a queued or processing job
       parameters:
         - name: id
           in: path
@@ -179,7 +179,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Job cancelled
+          description: Job cancelled (or cancellation signal sent for processing jobs)
           content:
             application/json:
               schema:
@@ -334,6 +334,8 @@ components:
           type: integer
         maxRetries:
           type: integer
+        priority:
+          type: integer
         createdAt:
           type: string
         updatedAt:
@@ -350,6 +352,7 @@ components:
         - progress
         - retryCount
         - maxRetries
+        - priority
         - createdAt
         - updatedAt
 
@@ -391,12 +394,23 @@ components:
           type: integer
         uptime:
           type: string
+        lastHeartbeat:
+          type: ["string", "null"]
+        currentJobId:
+          type: ["string", "null"]
+        memoryMB:
+          type: integer
+        processingTime:
+          type: ["string", "null"]
       required:
         - worker
         - queue
         - processing
         - failed
         - uptime
+        - lastHeartbeat
+        - currentJobId
+        - memoryMB
 
     CreateJobRequest:
       type: object
@@ -412,6 +426,9 @@ components:
         resolutionHeight:
           type: integer
           default: 1280
+        priority:
+          type: integer
+          default: 0
       required:
         - prompt
 

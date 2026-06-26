@@ -12,4 +12,11 @@ export interface SystemStatus {
   processing: number;
   failed: number;
   uptime: string;
+  /** @nullable */
+  lastHeartbeat: string | null;
+  /** @nullable */
+  currentJobId: string | null;
+  memoryMB: number;
+  /** @nullable */
+  processingTime?: string | null;
 }

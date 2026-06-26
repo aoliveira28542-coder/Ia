@@ -17,6 +17,7 @@ export interface Job {
   progress: number;
   retryCount: number;
   maxRetries: number;
+  priority: number;
   createdAt: string;
   updatedAt: string;
   /** @nullable */

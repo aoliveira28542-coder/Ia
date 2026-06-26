@@ -30,6 +30,7 @@ export const ListJobsResponse = zod.object({
   "progress": zod.number(),
   "retryCount": zod.number(),
   "maxRetries": zod.number(),
+  "priority": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()
@@ -43,12 +44,14 @@ export const ListJobsResponse = zod.object({
 export const createJobBodyDurationDefault = 5;
 export const createJobBodyResolutionWidthDefault = 720;
 export const createJobBodyResolutionHeightDefault = 1280;
+export const createJobBodyPriorityDefault = 0;
 
 export const CreateJobBody = zod.object({
   "prompt": zod.string(),
   "duration": zod.number().default(createJobBodyDurationDefault),
   "resolutionWidth": zod.number().default(createJobBodyResolutionWidthDefault),
-  "resolutionHeight": zod.number().default(createJobBodyResolutionHeightDefault)
+  "resolutionHeight": zod.number().default(createJobBodyResolutionHeightDefault),
+  "priority": zod.number().default(createJobBodyPriorityDefault)
 })
 
 export const CreateJobResponse = zod.object({
@@ -61,6 +64,7 @@ export const CreateJobResponse = zod.object({
   "progress": zod.number(),
   "retryCount": zod.number(),
   "maxRetries": zod.number(),
+  "priority": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()
@@ -84,6 +88,7 @@ export const GetJobResponse = zod.object({
   "progress": zod.number(),
   "retryCount": zod.number(),
   "maxRetries": zod.number(),
+  "priority": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()
@@ -119,7 +124,11 @@ export const GetSystemStatusResponse = zod.object({
   "queue": zod.number(),
   "processing": zod.number(),
   "failed": zod.number(),
-  "uptime": zod.string()
+  "uptime": zod.string(),
+  "lastHeartbeat": zod.string().nullable(),
+  "currentJobId": zod.string().nullable(),
+  "memoryMB": zod.number(),
+  "processingTime": zod.string().nullish()
 })
 
 
@@ -140,6 +149,7 @@ export const RetryJobResponse = zod.object({
   "progress": zod.number(),
   "retryCount": zod.number(),
   "maxRetries": zod.number(),
+  "priority": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()
@@ -147,7 +157,7 @@ export const RetryJobResponse = zod.object({
 
 
 /**
- * @summary Cancel a queued job
+ * @summary Cancel a queued or processing job
  */
 export const CancelJobParams = zod.object({
   "id": zod.coerce.string()
@@ -163,6 +173,7 @@ export const CancelJobResponse = zod.object({
   "progress": zod.number(),
   "retryCount": zod.number(),
   "maxRetries": zod.number(),
+  "priority": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()

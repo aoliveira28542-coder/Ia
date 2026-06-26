@@ -15,6 +15,7 @@ import {
   ListJobAttemptsResponse,
 } from "@workspace/api-zod";
 import { randomUUID } from "crypto";
+import { requestCancel } from "../lib/queue-worker";
 
 const router: IRouter = Router();
 
@@ -29,6 +30,7 @@ function toJobResponse(row: typeof jobsTable.$inferSelect) {
     progress: row.progress,
     retryCount: row.retryCount,
     maxRetries: row.maxRetries,
+    priority: row.priority,
     errorMessage: row.errorMessage ?? null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -80,6 +82,7 @@ router.post("/jobs", async (req, res): Promise<void> => {
       progress: 0,
       retryCount: 0,
       maxRetries: 3,
+      priority: parsed.data.priority ?? 0,
       createdAt: now,
       updatedAt: now,
     })
@@ -191,10 +194,17 @@ router.post("/jobs/:id/cancel", async (req, res): Promise<void> => {
     return;
   }
 
-  if (existing.status !== "queued") {
+  if (existing.status !== "queued" && existing.status !== "processing") {
     res.status(409).json({
       error: `Cannot cancel a job with status "${existing.status}"`,
     });
+    return;
+  }
+
+  // Processing jobs: send cancel signal to worker; return current state
+  if (existing.status === "processing") {
+    requestCancel(existing.id);
+    res.json(CancelJobResponse.parse(toJobResponse(existing)));
     return;
   }
 

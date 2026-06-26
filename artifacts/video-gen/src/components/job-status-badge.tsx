@@ -1,4 +1,3 @@
-import { JobStatus } from "@workspace/api-client-react/src/generated/api.schemas";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, CircleDashed, Loader2, XCircle, Ban } from "lucide-react";
 

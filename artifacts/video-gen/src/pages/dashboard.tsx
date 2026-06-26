@@ -1,5 +1,6 @@
 import React from "react";
-import { useListJobs, useCreateJob } from "@workspace/api-client-react";
+import { useCreateJob, getListJobsQueryOptions } from "@workspace/api-client-react";
+import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +20,7 @@ import { Progress } from "@/components/ui/progress";
 
 const formSchema = z.object({
   prompt: z.string().min(5, "Prompt must be at least 5 characters.").max(500, "Prompt is too long."),
-  duration: z.string().transform((v) => parseInt(v, 10)),
+  duration: z.string(),
   resolution: z.string()
 });
 
@@ -27,8 +28,9 @@ export default function Dashboard() {
   const { toast } = useToast();
   
   // Refetch every 3s to get real-time updates for processing/queued
-  const { data, isLoading } = useListJobs({
-    query: { refetchInterval: 3000 }
+  const { data, isLoading } = useQuery({
+    ...getListJobsQueryOptions(),
+    refetchInterval: 3000,
   });
 
   const createJob = useCreateJob();
@@ -44,11 +46,12 @@ export default function Dashboard() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const [width, height] = values.resolution.split('x').map(n => parseInt(n, 10));
+    const duration = parseInt(values.duration, 10);
     
     createJob.mutate({
       data: {
         prompt: values.prompt,
-        duration: values.duration,
+        duration,
         resolutionWidth: width,
         resolutionHeight: height
       }
@@ -60,10 +63,10 @@ export default function Dashboard() {
         });
         form.reset();
       },
-      onError: (err) => {
+      onError: () => {
         toast({
           title: "Failed to queue job",
-          description: err.error || "An unknown error occurred",
+          description: "An unknown error occurred",
           variant: "destructive"
         });
       }

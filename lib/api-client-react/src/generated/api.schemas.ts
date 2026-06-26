@@ -39,6 +39,12 @@ export interface Job {
   lockedAt?: string | null;
   /** @nullable */
   lockedBy?: string | null;
+  /** @nullable */
+  currentStage?: string | null;
+  /** @nullable */
+  presetName?: string | null;
+  referenceImages: string[];
+  characterIds: string[];
 }
 
 export interface JobAttempt {
@@ -112,12 +118,69 @@ export interface JobAssets {
   thumbnail: string | null;
 }
 
+export interface GenerationPreset {
+  id: string;
+  name: string;
+  resolution: string;
+  fps: number;
+  style: string;
+  /** @nullable */
+  description?: string | null;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePresetRequest {
+  name: string;
+  resolution?: string;
+  fps?: number;
+  style?: string;
+  description?: string;
+  isDefault?: boolean;
+}
+
+export interface Character {
+  id: string;
+  name: string;
+  /** @nullable */
+  referenceImage?: string | null;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  embedding?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCharacterRequest {
+  name: string;
+  referenceImage?: string;
+  description?: string;
+}
+
+export interface UpdateCharacterRequest {
+  name?: string;
+  referenceImage?: string;
+  description?: string;
+}
+
+export interface UploadResponse {
+  url: string;
+  path: string;
+  size: number;
+  mime: string;
+}
+
 export interface CreateJobRequest {
   prompt: string;
   duration?: number;
   resolutionWidth?: number;
   resolutionHeight?: number;
   priority?: number;
+  preset?: string;
+  imageReferences?: string[];
+  characterIds?: string[];
 }
 
 export type WebhookEvent = typeof WebhookEvent[keyof typeof WebhookEvent];
@@ -158,6 +221,14 @@ export type ListJobs200 = {
 
 export type ListJobAttempts200 = {
   attempts: JobAttempt[];
+};
+
+export type ListPresets200 = {
+  presets: GenerationPreset[];
+};
+
+export type ListCharacters200 = {
+  characters: Character[];
 };
 
 export type ListWebhooks200 = {

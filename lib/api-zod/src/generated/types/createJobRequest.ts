@@ -12,4 +12,7 @@ export interface CreateJobRequest {
   resolutionWidth?: number;
   resolutionHeight?: number;
   priority?: number;
+  preset?: string;
+  imageReferences?: string[];
+  characterIds?: string[];
 }

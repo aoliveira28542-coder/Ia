@@ -35,7 +35,11 @@ export const ListJobsResponse = zod.object({
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish(),
   "lockedAt": zod.string().nullish(),
-  "lockedBy": zod.string().nullish()
+  "lockedBy": zod.string().nullish(),
+  "currentStage": zod.string().nullish(),
+  "presetName": zod.string().nullish(),
+  "referenceImages": zod.array(zod.string()),
+  "characterIds": zod.array(zod.string())
 }))
 })
 
@@ -53,7 +57,10 @@ export const CreateJobBody = zod.object({
   "duration": zod.number().default(createJobBodyDurationDefault),
   "resolutionWidth": zod.number().default(createJobBodyResolutionWidthDefault),
   "resolutionHeight": zod.number().default(createJobBodyResolutionHeightDefault),
-  "priority": zod.number().default(createJobBodyPriorityDefault)
+  "priority": zod.number().default(createJobBodyPriorityDefault),
+  "preset": zod.string().optional(),
+  "imageReferences": zod.array(zod.string()).optional(),
+  "characterIds": zod.array(zod.string()).optional()
 })
 
 export const CreateJobResponse = zod.object({
@@ -71,7 +78,11 @@ export const CreateJobResponse = zod.object({
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish(),
   "lockedAt": zod.string().nullish(),
-  "lockedBy": zod.string().nullish()
+  "lockedBy": zod.string().nullish(),
+  "currentStage": zod.string().nullish(),
+  "presetName": zod.string().nullish(),
+  "referenceImages": zod.array(zod.string()),
+  "characterIds": zod.array(zod.string())
 })
 
 
@@ -97,7 +108,11 @@ export const GetJobResponse = zod.object({
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish(),
   "lockedAt": zod.string().nullish(),
-  "lockedBy": zod.string().nullish()
+  "lockedBy": zod.string().nullish(),
+  "currentStage": zod.string().nullish(),
+  "presetName": zod.string().nullish(),
+  "referenceImages": zod.array(zod.string()),
+  "characterIds": zod.array(zod.string())
 })
 
 
@@ -120,6 +135,172 @@ export const ListJobAttemptsResponse = zod.object({
   "errorMessage": zod.string().nullish()
 }))
 })
+
+
+/**
+ * @summary List all generation presets
+ */
+export const ListPresetsResponse = zod.object({
+  "presets": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "resolution": zod.string(),
+  "fps": zod.number(),
+  "style": zod.string(),
+  "description": zod.string().nullish(),
+  "isDefault": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+}))
+})
+
+
+/**
+ * @summary Create a generation preset
+ */
+export const createPresetBodyResolutionDefault = `1080p`;
+export const createPresetBodyFpsDefault = 24;
+export const createPresetBodyStyleDefault = `cinematic`;
+export const createPresetBodyIsDefaultDefault = false;
+
+export const CreatePresetBody = zod.object({
+  "name": zod.string(),
+  "resolution": zod.string().default(createPresetBodyResolutionDefault),
+  "fps": zod.number().default(createPresetBodyFpsDefault),
+  "style": zod.string().default(createPresetBodyStyleDefault),
+  "description": zod.string().optional(),
+  "isDefault": zod.boolean().default(createPresetBodyIsDefaultDefault)
+})
+
+export const CreatePresetResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "resolution": zod.string(),
+  "fps": zod.number(),
+  "style": zod.string(),
+  "description": zod.string().nullish(),
+  "isDefault": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Get a preset by ID or name
+ */
+export const GetPresetParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetPresetResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "resolution": zod.string(),
+  "fps": zod.number(),
+  "style": zod.string(),
+  "description": zod.string().nullish(),
+  "isDefault": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a preset
+ */
+export const DeletePresetParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeletePresetResponse = zod.void()
+
+
+/**
+ * @summary List all characters
+ */
+export const ListCharactersResponse = zod.object({
+  "characters": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "referenceImage": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "embedding": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+}))
+})
+
+
+/**
+ * @summary Create a character
+ */
+export const CreateCharacterBody = zod.object({
+  "name": zod.string(),
+  "referenceImage": zod.string().optional(),
+  "description": zod.string().optional()
+})
+
+export const CreateCharacterResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "referenceImage": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "embedding": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Get a character by ID
+ */
+export const GetCharacterParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetCharacterResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "referenceImage": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "embedding": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Update a character
+ */
+export const UpdateCharacterParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateCharacterBody = zod.object({
+  "name": zod.string().optional(),
+  "referenceImage": zod.string().optional(),
+  "description": zod.string().optional()
+})
+
+export const UpdateCharacterResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "referenceImage": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "embedding": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a character
+ */
+export const DeleteCharacterParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteCharacterResponse = zod.void()
 
 
 /**
@@ -198,7 +379,11 @@ export const RetryJobResponse = zod.object({
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish(),
   "lockedAt": zod.string().nullish(),
-  "lockedBy": zod.string().nullish()
+  "lockedBy": zod.string().nullish(),
+  "currentStage": zod.string().nullish(),
+  "presetName": zod.string().nullish(),
+  "referenceImages": zod.array(zod.string()),
+  "characterIds": zod.array(zod.string())
 })
 
 
@@ -224,7 +409,11 @@ export const CancelJobResponse = zod.object({
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish(),
   "lockedAt": zod.string().nullish(),
-  "lockedBy": zod.string().nullish()
+  "lockedBy": zod.string().nullish(),
+  "currentStage": zod.string().nullish(),
+  "presetName": zod.string().nullish(),
+  "referenceImages": zod.array(zod.string()),
+  "characterIds": zod.array(zod.string())
 })
 
 

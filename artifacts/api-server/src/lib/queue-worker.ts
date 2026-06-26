@@ -238,6 +238,14 @@ async function processTick() {
 
     const newProgress = Math.min(job.progress + PROGRESS_STEP, 100);
 
+    // Map progress → pipeline stage
+    const stage =
+      newProgress <= 20 ? "parsing"
+      : newProgress <= 40 ? "storyboard"
+      : newProgress <= 60 ? "frames"
+      : newProgress <= 80 ? "encoding"
+      : "finalizing";
+
     if (newProgress >= 100) {
       activeJobIds.delete(job.id);
       await closeAttempt(job.id, "done", now);
@@ -256,7 +264,7 @@ async function processTick() {
       }
     } else {
       await db.update(jobsTable)
-        .set({ progress: newProgress, updatedAt: now })
+        .set({ progress: newProgress, currentStage: stage, updatedAt: now })
         .where(eq(jobsTable.id, job.id));
     }
   }

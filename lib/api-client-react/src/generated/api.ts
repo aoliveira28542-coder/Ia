@@ -20,17 +20,24 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  Character,
+  CreateCharacterRequest,
   CreateJobRequest,
+  CreatePresetRequest,
   ErrorResponse,
+  GenerationPreset,
   HealthStatus,
   Job,
   JobAssets,
+  ListCharacters200,
   ListJobAttempts200,
   ListJobs200,
+  ListPresets200,
   ListWebhooks200,
   SystemMetrics,
   SystemStatus,
   TestWebhook200,
+  UpdateCharacterRequest,
   Webhook,
   WebhookInput
 } from './api.schemas';
@@ -439,6 +446,665 @@ export function useListJobAttempts<TData = Awaited<ReturnType<typeof listJobAtte
 
 
 
+
+export const getListPresetsUrl = () => {
+
+
+
+
+  return `/api/presets`
+}
+
+/**
+ * @summary List all generation presets
+ */
+export const listPresets = async ( options?: RequestInit): Promise<ListPresets200> => {
+
+  return customFetch<ListPresets200>(getListPresetsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPresetsQueryKey = () => {
+    return [
+    `/api/presets`
+    ] as const;
+    }
+
+
+export const getListPresetsQueryOptions = <TData = Awaited<ReturnType<typeof listPresets>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPresets>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPresetsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPresets>>> = ({ signal }) => listPresets({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPresets>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPresetsQueryResult = NonNullable<Awaited<ReturnType<typeof listPresets>>>
+export type ListPresetsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all generation presets
+ */
+
+export function useListPresets<TData = Awaited<ReturnType<typeof listPresets>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPresets>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPresetsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreatePresetUrl = () => {
+
+
+
+
+  return `/api/presets`
+}
+
+/**
+ * @summary Create a generation preset
+ */
+export const createPreset = async (createPresetRequest: CreatePresetRequest, options?: RequestInit): Promise<GenerationPreset> => {
+
+  return customFetch<GenerationPreset>(getCreatePresetUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createPresetRequest)
+  }
+);}
+
+
+
+
+export const getCreatePresetMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPreset>>, TError,{data: BodyType<CreatePresetRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPreset>>, TError,{data: BodyType<CreatePresetRequest>}, TContext> => {
+
+const mutationKey = ['createPreset'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPreset>>, {data: BodyType<CreatePresetRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createPreset(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePresetMutationResult = NonNullable<Awaited<ReturnType<typeof createPreset>>>
+    export type CreatePresetMutationBody = BodyType<CreatePresetRequest>
+    export type CreatePresetMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Create a generation preset
+ */
+export const useCreatePreset = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPreset>>, TError,{data: BodyType<CreatePresetRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createPreset>>,
+        TError,
+        {data: BodyType<CreatePresetRequest>},
+        TContext
+      > => {
+      return useMutation(getCreatePresetMutationOptions(options));
+    }
+
+export const getGetPresetUrl = (id: string,) => {
+
+
+
+
+  return `/api/presets/${id}`
+}
+
+/**
+ * @summary Get a preset by ID or name
+ */
+export const getPreset = async (id: string, options?: RequestInit): Promise<GenerationPreset> => {
+
+  return customFetch<GenerationPreset>(getGetPresetUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPresetQueryKey = (id: string,) => {
+    return [
+    `/api/presets/${id}`
+    ] as const;
+    }
+
+
+export const getGetPresetQueryOptions = <TData = Awaited<ReturnType<typeof getPreset>>, TError = ErrorType<ErrorResponse>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPreset>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPresetQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPreset>>> = ({ signal }) => getPreset(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPreset>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPresetQueryResult = NonNullable<Awaited<ReturnType<typeof getPreset>>>
+export type GetPresetQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get a preset by ID or name
+ */
+
+export function useGetPreset<TData = Awaited<ReturnType<typeof getPreset>>, TError = ErrorType<ErrorResponse>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPreset>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPresetQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDeletePresetUrl = (id: string,) => {
+
+
+
+
+  return `/api/presets/${id}`
+}
+
+/**
+ * @summary Delete a preset
+ */
+export const deletePreset = async (id: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeletePresetUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeletePresetMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePreset>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deletePreset>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deletePreset'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deletePreset>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deletePreset(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeletePresetMutationResult = NonNullable<Awaited<ReturnType<typeof deletePreset>>>
+
+    export type DeletePresetMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Delete a preset
+ */
+export const useDeletePreset = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePreset>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deletePreset>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeletePresetMutationOptions(options));
+    }
+
+export const getListCharactersUrl = () => {
+
+
+
+
+  return `/api/characters`
+}
+
+/**
+ * @summary List all characters
+ */
+export const listCharacters = async ( options?: RequestInit): Promise<ListCharacters200> => {
+
+  return customFetch<ListCharacters200>(getListCharactersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListCharactersQueryKey = () => {
+    return [
+    `/api/characters`
+    ] as const;
+    }
+
+
+export const getListCharactersQueryOptions = <TData = Awaited<ReturnType<typeof listCharacters>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCharacters>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCharactersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCharacters>>> = ({ signal }) => listCharacters({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCharacters>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListCharactersQueryResult = NonNullable<Awaited<ReturnType<typeof listCharacters>>>
+export type ListCharactersQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all characters
+ */
+
+export function useListCharacters<TData = Awaited<ReturnType<typeof listCharacters>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCharacters>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListCharactersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateCharacterUrl = () => {
+
+
+
+
+  return `/api/characters`
+}
+
+/**
+ * @summary Create a character
+ */
+export const createCharacter = async (createCharacterRequest: CreateCharacterRequest, options?: RequestInit): Promise<Character> => {
+
+  return customFetch<Character>(getCreateCharacterUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createCharacterRequest)
+  }
+);}
+
+
+
+
+export const getCreateCharacterMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCharacter>>, TError,{data: BodyType<CreateCharacterRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCharacter>>, TError,{data: BodyType<CreateCharacterRequest>}, TContext> => {
+
+const mutationKey = ['createCharacter'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCharacter>>, {data: BodyType<CreateCharacterRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createCharacter(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCharacterMutationResult = NonNullable<Awaited<ReturnType<typeof createCharacter>>>
+    export type CreateCharacterMutationBody = BodyType<CreateCharacterRequest>
+    export type CreateCharacterMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a character
+ */
+export const useCreateCharacter = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCharacter>>, TError,{data: BodyType<CreateCharacterRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCharacter>>,
+        TError,
+        {data: BodyType<CreateCharacterRequest>},
+        TContext
+      > => {
+      return useMutation(getCreateCharacterMutationOptions(options));
+    }
+
+export const getGetCharacterUrl = (id: string,) => {
+
+
+
+
+  return `/api/characters/${id}`
+}
+
+/**
+ * @summary Get a character by ID
+ */
+export const getCharacter = async (id: string, options?: RequestInit): Promise<Character> => {
+
+  return customFetch<Character>(getGetCharacterUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCharacterQueryKey = (id: string,) => {
+    return [
+    `/api/characters/${id}`
+    ] as const;
+    }
+
+
+export const getGetCharacterQueryOptions = <TData = Awaited<ReturnType<typeof getCharacter>>, TError = ErrorType<ErrorResponse>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCharacter>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCharacterQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCharacter>>> = ({ signal }) => getCharacter(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCharacter>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCharacterQueryResult = NonNullable<Awaited<ReturnType<typeof getCharacter>>>
+export type GetCharacterQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get a character by ID
+ */
+
+export function useGetCharacter<TData = Awaited<ReturnType<typeof getCharacter>>, TError = ErrorType<ErrorResponse>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCharacter>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCharacterQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateCharacterUrl = (id: string,) => {
+
+
+
+
+  return `/api/characters/${id}`
+}
+
+/**
+ * @summary Update a character
+ */
+export const updateCharacter = async (id: string,
+    updateCharacterRequest: UpdateCharacterRequest, options?: RequestInit): Promise<Character> => {
+
+  return customFetch<Character>(getUpdateCharacterUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateCharacterRequest)
+  }
+);}
+
+
+
+
+export const getUpdateCharacterMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCharacter>>, TError,{id: string;data: BodyType<UpdateCharacterRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCharacter>>, TError,{id: string;data: BodyType<UpdateCharacterRequest>}, TContext> => {
+
+const mutationKey = ['updateCharacter'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCharacter>>, {id: string;data: BodyType<UpdateCharacterRequest>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateCharacter(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCharacterMutationResult = NonNullable<Awaited<ReturnType<typeof updateCharacter>>>
+    export type UpdateCharacterMutationBody = BodyType<UpdateCharacterRequest>
+    export type UpdateCharacterMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Update a character
+ */
+export const useUpdateCharacter = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCharacter>>, TError,{id: string;data: BodyType<UpdateCharacterRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCharacter>>,
+        TError,
+        {id: string;data: BodyType<UpdateCharacterRequest>},
+        TContext
+      > => {
+      return useMutation(getUpdateCharacterMutationOptions(options));
+    }
+
+export const getDeleteCharacterUrl = (id: string,) => {
+
+
+
+
+  return `/api/characters/${id}`
+}
+
+/**
+ * @summary Delete a character
+ */
+export const deleteCharacter = async (id: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteCharacterUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteCharacterMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCharacter>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteCharacter>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteCharacter'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCharacter>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteCharacter(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteCharacterMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCharacter>>>
+
+    export type DeleteCharacterMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Delete a character
+ */
+export const useDeleteCharacter = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCharacter>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteCharacter>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteCharacterMutationOptions(options));
+    }
 
 export const getGetSystemStatusUrl = () => {
 

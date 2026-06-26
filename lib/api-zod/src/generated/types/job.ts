@@ -26,4 +26,10 @@ export interface Job {
   lockedAt?: string | null;
   /** @nullable */
   lockedBy?: string | null;
+  /** @nullable */
+  currentStage?: string | null;
+  /** @nullable */
+  presetName?: string | null;
+  referenceImages: string[];
+  characterIds: string[];
 }

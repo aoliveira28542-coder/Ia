@@ -14,6 +14,12 @@ tags:
     description: Video generation job operations
   - name: webhooks
     description: Webhook notification endpoints
+  - name: presets
+    description: Generation preset management
+  - name: characters
+    description: Character consistency management
+  - name: uploads
+    description: File upload operations
 paths:
   /healthz:
     get:
@@ -117,6 +123,203 @@ paths:
                   - attempts
         "404":
           description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /presets:
+    get:
+      operationId: listPresets
+      tags: [presets]
+      summary: List all generation presets
+      responses:
+        "200":
+          description: List of presets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  presets:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/GenerationPreset"
+                required:
+                  - presets
+    post:
+      operationId: createPreset
+      tags: [presets]
+      summary: Create a generation preset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePresetRequest"
+      responses:
+        "201":
+          description: Preset created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerationPreset"
+        "409":
+          description: Preset name already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /presets/{id}:
+    get:
+      operationId: getPreset
+      tags: [presets]
+      summary: Get a preset by ID or name
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Preset found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerationPreset"
+        "404":
+          description: Preset not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deletePreset
+      tags: [presets]
+      summary: Delete a preset
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Preset deleted
+        "404":
+          description: Preset not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /characters:
+    get:
+      operationId: listCharacters
+      tags: [characters]
+      summary: List all characters
+      responses:
+        "200":
+          description: List of characters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  characters:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Character"
+                required:
+                  - characters
+    post:
+      operationId: createCharacter
+      tags: [characters]
+      summary: Create a character
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCharacterRequest"
+      responses:
+        "201":
+          description: Character created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+
+  /characters/{id}:
+    get:
+      operationId: getCharacter
+      tags: [characters]
+      summary: Get a character by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Character found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+        "404":
+          description: Character not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateCharacter
+      tags: [characters]
+      summary: Update a character
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCharacterRequest"
+      responses:
+        "200":
+          description: Character updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+        "404":
+          description: Character not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteCharacter
+      tags: [characters]
+      summary: Delete a character
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Character deleted
+        "404":
+          description: Character not found
           content:
             application/json:
               schema:
@@ -384,6 +587,18 @@ components:
           type: ["string", "null"]
         lockedBy:
           type: ["string", "null"]
+        currentStage:
+          type: ["string", "null"]
+        presetName:
+          type: ["string", "null"]
+        referenceImages:
+          type: array
+          items:
+            type: string
+        characterIds:
+          type: array
+          items:
+            type: string
       required:
         - id
         - prompt
@@ -395,6 +610,8 @@ components:
         - retryCount
         - maxRetries
         - priority
+        - referenceImages
+        - characterIds
         - createdAt
         - updatedAt
 
@@ -532,6 +749,121 @@ components:
         - video
         - thumbnail
 
+    GenerationPreset:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        resolution:
+          type: string
+        fps:
+          type: integer
+        style:
+          type: string
+        description:
+          type: ["string", "null"]
+        isDefault:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - resolution
+        - fps
+        - style
+        - isDefault
+        - createdAt
+        - updatedAt
+
+    CreatePresetRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        resolution:
+          type: string
+          default: "1080p"
+        fps:
+          type: integer
+          default: 24
+        style:
+          type: string
+          default: "cinematic"
+        description:
+          type: string
+        isDefault:
+          type: boolean
+          default: false
+      required:
+        - name
+
+    Character:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        referenceImage:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        embedding:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+
+    CreateCharacterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        referenceImage:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+
+    UpdateCharacterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        referenceImage:
+          type: string
+        description:
+          type: string
+
+    UploadResponse:
+      type: object
+      properties:
+        url:
+          type: string
+        path:
+          type: string
+        size:
+          type: integer
+        mime:
+          type: string
+      required:
+        - url
+        - path
+        - size
+        - mime
+
     CreateJobRequest:
       type: object
       properties:
@@ -549,6 +881,16 @@ components:
         priority:
           type: integer
           default: 0
+        preset:
+          type: string
+        imageReferences:
+          type: array
+          items:
+            type: string
+        characterIds:
+          type: array
+          items:
+            type: string
       required:
         - prompt
 

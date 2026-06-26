@@ -11,6 +11,8 @@ export const jobsTable = pgTable("jobs", {
   status: text("status").notNull().default("queued"),
   progress: integer("progress").notNull().default(0),
   errorMessage: text("error_message"),
+  retryCount: integer("retry_count").notNull().default(0),
+  maxRetries: integer("max_retries").notNull().default(3),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

@@ -24,8 +24,10 @@ import type {
   ErrorResponse,
   HealthStatus,
   Job,
+  ListJobAttempts200,
   ListJobs200,
   ListWebhooks200,
+  SystemStatus,
   TestWebhook200,
   Webhook,
   WebhookInput
@@ -347,6 +349,160 @@ export function useGetJob<TData = Awaited<ReturnType<typeof getJob>>, TError = E
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetJobQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListJobAttemptsUrl = (id: string,) => {
+
+
+
+
+  return `/api/jobs/${id}/attempts`
+}
+
+/**
+ * @summary List attempt history for a job
+ */
+export const listJobAttempts = async (id: string, options?: RequestInit): Promise<ListJobAttempts200> => {
+
+  return customFetch<ListJobAttempts200>(getListJobAttemptsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListJobAttemptsQueryKey = (id: string,) => {
+    return [
+    `/api/jobs/${id}/attempts`
+    ] as const;
+    }
+
+
+export const getListJobAttemptsQueryOptions = <TData = Awaited<ReturnType<typeof listJobAttempts>>, TError = ErrorType<ErrorResponse>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listJobAttempts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListJobAttemptsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listJobAttempts>>> = ({ signal }) => listJobAttempts(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listJobAttempts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListJobAttemptsQueryResult = NonNullable<Awaited<ReturnType<typeof listJobAttempts>>>
+export type ListJobAttemptsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List attempt history for a job
+ */
+
+export function useListJobAttempts<TData = Awaited<ReturnType<typeof listJobAttempts>>, TError = ErrorType<ErrorResponse>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listJobAttempts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListJobAttemptsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetSystemStatusUrl = () => {
+
+
+
+
+  return `/api/system/status`
+}
+
+/**
+ * @summary Worker and queue health status
+ */
+export const getSystemStatus = async ( options?: RequestInit): Promise<SystemStatus> => {
+
+  return customFetch<SystemStatus>(getGetSystemStatusUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSystemStatusQueryKey = () => {
+    return [
+    `/api/system/status`
+    ] as const;
+    }
+
+
+export const getGetSystemStatusQueryOptions = <TData = Awaited<ReturnType<typeof getSystemStatus>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSystemStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSystemStatusQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSystemStatus>>> = ({ signal }) => getSystemStatus({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSystemStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSystemStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getSystemStatus>>>
+export type GetSystemStatusQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Worker and queue health status
+ */
+
+export function useGetSystemStatus<TData = Awaited<ReturnType<typeof getSystemStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSystemStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSystemStatusQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

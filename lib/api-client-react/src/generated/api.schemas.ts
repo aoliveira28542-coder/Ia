@@ -28,10 +28,35 @@ export interface Job {
   resolutionHeight: number;
   status: JobStatus;
   progress: number;
+  retryCount: number;
+  maxRetries: number;
   createdAt: string;
   updatedAt: string;
   /** @nullable */
   errorMessage?: string | null;
+}
+
+export interface JobAttempt {
+  id: string;
+  jobId: string;
+  attemptNumber: number;
+  startedAt: string;
+  /** @nullable */
+  completedAt?: string | null;
+  /** @nullable */
+  durationMs?: number | null;
+  /** @nullable */
+  result?: string | null;
+  /** @nullable */
+  errorMessage?: string | null;
+}
+
+export interface SystemStatus {
+  worker: string;
+  queue: number;
+  processing: number;
+  failed: number;
+  uptime: string;
 }
 
 export interface CreateJobRequest {
@@ -75,6 +100,10 @@ export interface ErrorResponse {
 
 export type ListJobs200 = {
   jobs: Job[];
+};
+
+export type ListJobAttempts200 = {
+  attempts: JobAttempt[];
 };
 
 export type ListWebhooks200 = {

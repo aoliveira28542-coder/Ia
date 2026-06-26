@@ -28,6 +28,8 @@ export const ListJobsResponse = zod.object({
   "resolutionHeight": zod.number(),
   "status": zod.enum(['queued', 'processing', 'done', 'failed', 'cancelled']),
   "progress": zod.number(),
+  "retryCount": zod.number(),
+  "maxRetries": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()
@@ -57,6 +59,8 @@ export const CreateJobResponse = zod.object({
   "resolutionHeight": zod.number(),
   "status": zod.enum(['queued', 'processing', 'done', 'failed', 'cancelled']),
   "progress": zod.number(),
+  "retryCount": zod.number(),
+  "maxRetries": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()
@@ -78,9 +82,44 @@ export const GetJobResponse = zod.object({
   "resolutionHeight": zod.number(),
   "status": zod.enum(['queued', 'processing', 'done', 'failed', 'cancelled']),
   "progress": zod.number(),
+  "retryCount": zod.number(),
+  "maxRetries": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()
+})
+
+
+/**
+ * @summary List attempt history for a job
+ */
+export const ListJobAttemptsParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ListJobAttemptsResponse = zod.object({
+  "attempts": zod.array(zod.object({
+  "id": zod.string(),
+  "jobId": zod.string(),
+  "attemptNumber": zod.number(),
+  "startedAt": zod.string(),
+  "completedAt": zod.string().nullish(),
+  "durationMs": zod.number().nullish(),
+  "result": zod.string().nullish(),
+  "errorMessage": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Worker and queue health status
+ */
+export const GetSystemStatusResponse = zod.object({
+  "worker": zod.string(),
+  "queue": zod.number(),
+  "processing": zod.number(),
+  "failed": zod.number(),
+  "uptime": zod.string()
 })
 
 
@@ -99,6 +138,8 @@ export const RetryJobResponse = zod.object({
   "resolutionHeight": zod.number(),
   "status": zod.enum(['queued', 'processing', 'done', 'failed', 'cancelled']),
   "progress": zod.number(),
+  "retryCount": zod.number(),
+  "maxRetries": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()
@@ -120,6 +161,8 @@ export const CancelJobResponse = zod.object({
   "resolutionHeight": zod.number(),
   "status": zod.enum(['queued', 'processing', 'done', 'failed', 'cancelled']),
   "progress": zod.number(),
+  "retryCount": zod.number(),
+  "maxRetries": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
   "errorMessage": zod.string().nullish()

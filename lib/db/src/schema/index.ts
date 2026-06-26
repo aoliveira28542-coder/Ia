@@ -18,4 +18,5 @@
 //   export type Post = typeof postsTable.$inferSelect;
 
 export * from "./jobs";
+export * from "./job-attempts";
 export * from "./webhooks";

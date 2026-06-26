@@ -15,6 +15,8 @@ export interface Job {
   resolutionHeight: number;
   status: JobStatus;
   progress: number;
+  retryCount: number;
+  maxRetries: number;
   createdAt: string;
   updatedAt: string;
   /** @nullable */

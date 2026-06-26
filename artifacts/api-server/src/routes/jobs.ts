@@ -1,16 +1,18 @@
 import { Router, type IRouter } from "express";
-import { eq, desc } from "drizzle-orm";
-import { db, jobsTable } from "@workspace/db";
+import { eq, desc, asc } from "drizzle-orm";
+import { db, jobsTable, jobAttemptsTable } from "@workspace/db";
 import {
   CreateJobBody,
   GetJobParams,
   CancelJobParams,
   RetryJobParams,
+  ListJobAttemptsParams,
   ListJobsResponse,
   GetJobResponse,
   CreateJobResponse,
   CancelJobResponse,
   RetryJobResponse,
+  ListJobAttemptsResponse,
 } from "@workspace/api-zod";
 import { randomUUID } from "crypto";
 
@@ -25,9 +27,24 @@ function toJobResponse(row: typeof jobsTable.$inferSelect) {
     resolutionHeight: row.resolutionHeight,
     status: row.status as "queued" | "processing" | "done" | "failed" | "cancelled",
     progress: row.progress,
+    retryCount: row.retryCount,
+    maxRetries: row.maxRetries,
     errorMessage: row.errorMessage ?? null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+function toAttemptResponse(row: typeof jobAttemptsTable.$inferSelect) {
+  return {
+    id: row.id,
+    jobId: row.jobId,
+    attemptNumber: row.attemptNumber,
+    startedAt: row.startedAt.toISOString(),
+    completedAt: row.completedAt?.toISOString() ?? null,
+    durationMs: row.durationMs ?? null,
+    result: row.result ?? null,
+    errorMessage: row.errorMessage ?? null,
   };
 }
 
@@ -61,6 +78,8 @@ router.post("/jobs", async (req, res): Promise<void> => {
       resolutionHeight: parsed.data.resolutionHeight ?? 1280,
       status: "queued",
       progress: 0,
+      retryCount: 0,
+      maxRetries: 3,
       createdAt: now,
       updatedAt: now,
     })
@@ -89,6 +108,32 @@ router.get("/jobs/:id", async (req, res): Promise<void> => {
   res.json(GetJobResponse.parse(toJobResponse(row)));
 });
 
+router.get("/jobs/:id/attempts", async (req, res): Promise<void> => {
+  const params = ListJobAttemptsParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [job] = await db
+    .select()
+    .from(jobsTable)
+    .where(eq(jobsTable.id, params.data.id));
+
+  if (!job) {
+    res.status(404).json({ error: "Job not found" });
+    return;
+  }
+
+  const rows = await db
+    .select()
+    .from(jobAttemptsTable)
+    .where(eq(jobAttemptsTable.jobId, params.data.id))
+    .orderBy(asc(jobAttemptsTable.attemptNumber));
+
+  res.json(ListJobAttemptsResponse.parse({ attempts: rows.map(toAttemptResponse) }));
+});
+
 router.post("/jobs/:id/retry", async (req, res): Promise<void> => {
   const params = RetryJobParams.safeParse(req.params);
   if (!params.success) {
@@ -109,6 +154,13 @@ router.post("/jobs/:id/retry", async (req, res): Promise<void> => {
   if (existing.status !== "failed" && existing.status !== "cancelled") {
     res.status(409).json({
       error: `Cannot retry a job with status "${existing.status}"`,
+    });
+    return;
+  }
+
+  if (existing.retryCount >= existing.maxRetries) {
+    res.status(409).json({
+      error: `Job has reached the maximum of ${existing.maxRetries} retries`,
     });
     return;
   }

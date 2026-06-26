@@ -90,6 +90,51 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /jobs/{id}/attempts:
+    get:
+      operationId: listJobAttempts
+      tags: [jobs]
+      summary: List attempt history for a job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of attempts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attempts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/JobAttempt"
+                required:
+                  - attempts
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /system/status:
+    get:
+      operationId: getSystemStatus
+      tags: [health]
+      summary: Worker and queue health status
+      responses:
+        "200":
+          description: System status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemStatus"
+
   /jobs/{id}/retry:
     post:
       operationId: retryJob
@@ -285,6 +330,10 @@ components:
           $ref: "#/components/schemas/JobStatus"
         progress:
           type: integer
+        retryCount:
+          type: integer
+        maxRetries:
+          type: integer
         createdAt:
           type: string
         updatedAt:
@@ -299,8 +348,55 @@ components:
         - resolutionHeight
         - status
         - progress
+        - retryCount
+        - maxRetries
         - createdAt
         - updatedAt
+
+    JobAttempt:
+      type: object
+      properties:
+        id:
+          type: string
+        jobId:
+          type: string
+        attemptNumber:
+          type: integer
+        startedAt:
+          type: string
+        completedAt:
+          type: ["string", "null"]
+        durationMs:
+          type: ["integer", "null"]
+        result:
+          type: ["string", "null"]
+        errorMessage:
+          type: ["string", "null"]
+      required:
+        - id
+        - jobId
+        - attemptNumber
+        - startedAt
+
+    SystemStatus:
+      type: object
+      properties:
+        worker:
+          type: string
+        queue:
+          type: integer
+        processing:
+          type: integer
+        failed:
+          type: integer
+        uptime:
+          type: string
+      required:
+        - worker
+        - queue
+        - processing
+        - failed
+        - uptime
 
     CreateJobRequest:
       type: object

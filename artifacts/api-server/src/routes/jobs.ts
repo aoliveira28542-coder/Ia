@@ -1,18 +1,20 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, asc } from "drizzle-orm";
-import { db, jobsTable, jobAttemptsTable } from "@workspace/db";
+import { db, jobsTable, jobAttemptsTable, assetsTable } from "@workspace/db";
 import {
   CreateJobBody,
   GetJobParams,
   CancelJobParams,
   RetryJobParams,
   ListJobAttemptsParams,
+  ListJobAssetsParams,
   ListJobsResponse,
   GetJobResponse,
   CreateJobResponse,
   CancelJobResponse,
   RetryJobResponse,
   ListJobAttemptsResponse,
+  ListJobAssetsResponse,
 } from "@workspace/api-zod";
 import { randomUUID } from "crypto";
 import { requestCancel } from "../lib/queue-worker";
@@ -217,6 +219,46 @@ router.post("/jobs/:id/cancel", async (req, res): Promise<void> => {
     .returning();
 
   res.json(CancelJobResponse.parse(toJobResponse(updated)));
+});
+
+router.get("/jobs/:id/assets", async (req, res): Promise<void> => {
+  const params = ListJobAssetsParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [job] = await db
+    .select()
+    .from(jobsTable)
+    .where(eq(jobsTable.id, params.data.id));
+
+  if (!job) {
+    res.status(404).json({ error: "Job not found" });
+    return;
+  }
+
+  const rows = await db
+    .select()
+    .from(assetsTable)
+    .where(eq(assetsTable.jobId, params.data.id))
+    .orderBy(asc(assetsTable.createdAt));
+
+  const assets = rows.map((r) => ({
+    id: r.id,
+    jobId: r.jobId,
+    type: r.type,
+    path: r.path,
+    url: r.url,
+    size: r.size,
+    mime: r.mime,
+    createdAt: r.createdAt.toISOString(),
+  }));
+
+  const video = assets.find((a) => a.type === "generated_video")?.url ?? null;
+  const thumbnail = assets.find((a) => a.type === "thumbnail")?.url ?? null;
+
+  res.json(ListJobAssetsResponse.parse({ assets, video, thumbnail }));
 });
 
 export default router;

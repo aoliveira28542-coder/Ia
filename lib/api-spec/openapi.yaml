@@ -148,6 +148,31 @@ paths:
               schema:
                 $ref: "#/components/schemas/SystemMetrics"
 
+  /jobs/{id}/assets:
+    get:
+      operationId: listJobAssets
+      tags: [jobs]
+      summary: List assets produced by a completed job
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Assets for the job
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobAssets"
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /jobs/{id}/retry:
     post:
       operationId: retryJob
@@ -460,6 +485,52 @@ components:
         - avgProcessingTimeMs
         - avgProcessingTime
         - successRate
+
+    Asset:
+      type: object
+      properties:
+        id:
+          type: string
+        jobId:
+          type: string
+        type:
+          type: string
+          enum: [input_image, generated_video, thumbnail, audio, subtitle]
+        path:
+          type: string
+        url:
+          type: string
+        size:
+          type: integer
+        mime:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - jobId
+        - type
+        - path
+        - url
+        - size
+        - mime
+        - createdAt
+
+    JobAssets:
+      type: object
+      properties:
+        assets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Asset"
+        video:
+          type: ["string", "null"]
+        thumbnail:
+          type: ["string", "null"]
+      required:
+        - assets
+        - video
+        - thumbnail
 
     CreateJobRequest:
       type: object

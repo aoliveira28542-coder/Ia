@@ -1,6 +1,8 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import path from "path";
+import { promises as fs } from "fs";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -30,5 +32,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+// Serve uploaded assets
+const uploadsDir = path.resolve(process.cwd(), "uploads");
+fs.mkdir(uploadsDir, { recursive: true }).catch(() => undefined);
+app.use("/uploads", express.static(uploadsDir));
 
 export default app;

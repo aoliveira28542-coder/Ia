@@ -20,3 +20,4 @@
 export * from "./jobs";
 export * from "./job-attempts";
 export * from "./webhooks";
+export * from "./assets";

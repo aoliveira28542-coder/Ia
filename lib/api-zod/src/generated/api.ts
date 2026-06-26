@@ -154,6 +154,29 @@ export const GetSystemMetricsResponse = zod.object({
 
 
 /**
+ * @summary List assets produced by a completed job
+ */
+export const ListJobAssetsParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ListJobAssetsResponse = zod.object({
+  "assets": zod.array(zod.object({
+  "id": zod.string(),
+  "jobId": zod.string(),
+  "type": zod.enum(['input_image', 'generated_video', 'thumbnail', 'audio', 'subtitle']),
+  "path": zod.string(),
+  "url": zod.string(),
+  "size": zod.number(),
+  "mime": zod.string(),
+  "createdAt": zod.string()
+})),
+  "video": zod.string().nullable(),
+  "thumbnail": zod.string().nullable()
+})
+
+
+/**
  * @summary Retry a failed or cancelled job
  */
 export const RetryJobParams = zod.object({

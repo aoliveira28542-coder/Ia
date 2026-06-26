@@ -82,6 +82,36 @@ export interface SystemMetrics {
   successRate: string;
 }
 
+export type AssetType = typeof AssetType[keyof typeof AssetType];
+
+
+export const AssetType = {
+  input_image: 'input_image',
+  generated_video: 'generated_video',
+  thumbnail: 'thumbnail',
+  audio: 'audio',
+  subtitle: 'subtitle',
+} as const;
+
+export interface Asset {
+  id: string;
+  jobId: string;
+  type: AssetType;
+  path: string;
+  url: string;
+  size: number;
+  mime: string;
+  createdAt: string;
+}
+
+export interface JobAssets {
+  assets: Asset[];
+  /** @nullable */
+  video: string | null;
+  /** @nullable */
+  thumbnail: string | null;
+}
+
 export interface CreateJobRequest {
   prompt: string;
   duration?: number;

@@ -1,7 +1,14 @@
-import { eq, or, count, desc, asc, and, lt, inArray, sql } from "drizzle-orm";
-import { db, jobsTable, jobAttemptsTable, webhooksTable } from "@workspace/db";
+import { eq, or, count, desc, asc, and, lt, inArray } from "drizzle-orm";
+import { db, jobsTable, jobAttemptsTable, webhooksTable, assetsTable } from "@workspace/db";
 import { logger } from "./logger";
 import { randomUUID } from "crypto";
+import { storage } from "./storage/local";
+
+// Minimal 1×1 white pixel PNG (placeholder thumbnail)
+const PNG_1X1 = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg==",
+  "base64",
+);
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const TICK_INTERVAL_MS = 3000;
@@ -37,6 +44,44 @@ export function getWorkerStatus() {
     currentJobIds: Array.from(activeJobIds),
     memoryMB: Math.round(process.memoryUsage().rss / 1024 / 1024),
   };
+}
+
+// ── Asset generation ──────────────────────────────────────────────────────────
+async function generateAssets(job: typeof jobsTable.$inferSelect) {
+  const now = new Date();
+
+  // Thumbnail: 1×1 PNG placeholder
+  const thumbKey = `${job.id}/thumbnail.png`;
+  const thumbResult = await storage.save(thumbKey, PNG_1X1, "image/png");
+  await db.insert(assetsTable).values({
+    id: randomUUID(),
+    jobId: job.id,
+    type: "thumbnail",
+    path: thumbResult.path,
+    url: thumbResult.url,
+    size: thumbResult.size,
+    mime: "image/png",
+    createdAt: now,
+  });
+
+  // Video: minimal placeholder MP4 stub
+  const videoContent = Buffer.from(
+    `RENDERSYNC_VIDEO_PLACEHOLDER\njob:${job.id}\nprompt:${job.prompt}\nduration:${job.duration}s\nresolution:${job.resolutionWidth}x${job.resolutionHeight}\n`,
+  );
+  const videoKey = `${job.id}/video.mp4`;
+  const videoResult = await storage.save(videoKey, videoContent, "video/mp4");
+  await db.insert(assetsTable).values({
+    id: randomUUID(),
+    jobId: job.id,
+    type: "generated_video",
+    path: videoResult.path,
+    url: videoResult.url,
+    size: videoResult.size,
+    mime: "video/mp4",
+    createdAt: now,
+  });
+
+  logger.info({ jobId: job.id, thumbUrl: thumbResult.url, videoUrl: videoResult.url }, "Assets generated");
 }
 
 // ── Webhooks ──────────────────────────────────────────────────────────────────
@@ -202,6 +247,9 @@ async function processTick() {
         .returning();
       logger.info({ jobId: job.id }, "Job completed");
       if (completed) {
+        generateAssets(completed).catch((err) =>
+          logger.error({ err }, "Asset generation error"),
+        );
         fireWebhooks("job.done", completed).catch((err) =>
           logger.error({ err }, "Webhook dispatch error"),
         );

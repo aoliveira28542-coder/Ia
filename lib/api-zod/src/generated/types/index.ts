@@ -6,10 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './asset';
+export * from './assetType';
 export * from './createJobRequest';
 export * from './errorResponse';
 export * from './healthStatus';
 export * from './job';
+export * from './jobAssets';
 export * from './jobAttempt';
 export * from './jobStatus';
 export * from './listJobAttempts200';

@@ -24,6 +24,7 @@ import type {
   ErrorResponse,
   HealthStatus,
   Job,
+  JobAssets,
   ListJobAttempts200,
   ListJobs200,
   ListWebhooks200,
@@ -581,6 +582,83 @@ export function useGetSystemMetrics<TData = Awaited<ReturnType<typeof getSystemM
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetSystemMetricsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListJobAssetsUrl = (id: string,) => {
+
+
+
+
+  return `/api/jobs/${id}/assets`
+}
+
+/**
+ * @summary List assets produced by a completed job
+ */
+export const listJobAssets = async (id: string, options?: RequestInit): Promise<JobAssets> => {
+
+  return customFetch<JobAssets>(getListJobAssetsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListJobAssetsQueryKey = (id: string,) => {
+    return [
+    `/api/jobs/${id}/assets`
+    ] as const;
+    }
+
+
+export const getListJobAssetsQueryOptions = <TData = Awaited<ReturnType<typeof listJobAssets>>, TError = ErrorType<ErrorResponse>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listJobAssets>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListJobAssetsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listJobAssets>>> = ({ signal }) => listJobAssets(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listJobAssets>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListJobAssetsQueryResult = NonNullable<Awaited<ReturnType<typeof listJobAssets>>>
+export type ListJobAssetsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List assets produced by a completed job
+ */
+
+export function useListJobAssets<TData = Awaited<ReturnType<typeof listJobAssets>>, TError = ErrorType<ErrorResponse>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listJobAssets>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListJobAssetsQueryOptions(id,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

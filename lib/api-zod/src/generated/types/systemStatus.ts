@@ -8,15 +8,14 @@
 
 export interface SystemStatus {
   worker: string;
+  workerId: string;
+  concurrency: number;
   queue: number;
   processing: number;
   failed: number;
   uptime: string;
   /** @nullable */
   lastHeartbeat: string | null;
-  /** @nullable */
-  currentJobId: string | null;
+  currentJobIds: string[];
   memoryMB: number;
-  /** @nullable */
-  processingTime?: string | null;
 }

@@ -135,6 +135,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/SystemStatus"
 
+  /system/metrics:
+    get:
+      operationId: getSystemMetrics
+      tags: [health]
+      summary: Aggregate job processing metrics
+      responses:
+        "200":
+          description: System metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemMetrics"
+
   /jobs/{id}/retry:
     post:
       operationId: retryJob
@@ -342,6 +355,10 @@ components:
           type: string
         errorMessage:
           type: ["string", "null"]
+        lockedAt:
+          type: ["string", "null"]
+        lockedBy:
+          type: ["string", "null"]
       required:
         - id
         - prompt
@@ -386,6 +403,10 @@ components:
       properties:
         worker:
           type: string
+        workerId:
+          type: string
+        concurrency:
+          type: integer
         queue:
           type: integer
         processing:
@@ -396,21 +417,49 @@ components:
           type: string
         lastHeartbeat:
           type: ["string", "null"]
-        currentJobId:
-          type: ["string", "null"]
+        currentJobIds:
+          type: array
+          items:
+            type: string
         memoryMB:
           type: integer
-        processingTime:
-          type: ["string", "null"]
       required:
         - worker
+        - workerId
+        - concurrency
         - queue
         - processing
         - failed
         - uptime
         - lastHeartbeat
-        - currentJobId
+        - currentJobIds
         - memoryMB
+
+    SystemMetrics:
+      type: object
+      properties:
+        totalJobs:
+          type: integer
+        success:
+          type: integer
+        failed:
+          type: integer
+        cancelled:
+          type: integer
+        avgProcessingTimeMs:
+          type: ["integer", "null"]
+        avgProcessingTime:
+          type: ["string", "null"]
+        successRate:
+          type: string
+      required:
+        - totalJobs
+        - success
+        - failed
+        - cancelled
+        - avgProcessingTimeMs
+        - avgProcessingTime
+        - successRate
 
     CreateJobRequest:
       type: object

@@ -33,7 +33,9 @@ export const ListJobsResponse = zod.object({
   "priority": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
-  "errorMessage": zod.string().nullish()
+  "errorMessage": zod.string().nullish(),
+  "lockedAt": zod.string().nullish(),
+  "lockedBy": zod.string().nullish()
 }))
 })
 
@@ -67,7 +69,9 @@ export const CreateJobResponse = zod.object({
   "priority": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
-  "errorMessage": zod.string().nullish()
+  "errorMessage": zod.string().nullish(),
+  "lockedAt": zod.string().nullish(),
+  "lockedBy": zod.string().nullish()
 })
 
 
@@ -91,7 +95,9 @@ export const GetJobResponse = zod.object({
   "priority": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
-  "errorMessage": zod.string().nullish()
+  "errorMessage": zod.string().nullish(),
+  "lockedAt": zod.string().nullish(),
+  "lockedBy": zod.string().nullish()
 })
 
 
@@ -121,14 +127,29 @@ export const ListJobAttemptsResponse = zod.object({
  */
 export const GetSystemStatusResponse = zod.object({
   "worker": zod.string(),
+  "workerId": zod.string(),
+  "concurrency": zod.number(),
   "queue": zod.number(),
   "processing": zod.number(),
   "failed": zod.number(),
   "uptime": zod.string(),
   "lastHeartbeat": zod.string().nullable(),
-  "currentJobId": zod.string().nullable(),
-  "memoryMB": zod.number(),
-  "processingTime": zod.string().nullish()
+  "currentJobIds": zod.array(zod.string()),
+  "memoryMB": zod.number()
+})
+
+
+/**
+ * @summary Aggregate job processing metrics
+ */
+export const GetSystemMetricsResponse = zod.object({
+  "totalJobs": zod.number(),
+  "success": zod.number(),
+  "failed": zod.number(),
+  "cancelled": zod.number(),
+  "avgProcessingTimeMs": zod.number().nullable(),
+  "avgProcessingTime": zod.string().nullable(),
+  "successRate": zod.string()
 })
 
 
@@ -152,7 +173,9 @@ export const RetryJobResponse = zod.object({
   "priority": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
-  "errorMessage": zod.string().nullish()
+  "errorMessage": zod.string().nullish(),
+  "lockedAt": zod.string().nullish(),
+  "lockedBy": zod.string().nullish()
 })
 
 
@@ -176,7 +199,9 @@ export const CancelJobResponse = zod.object({
   "priority": zod.number(),
   "createdAt": zod.string(),
   "updatedAt": zod.string(),
-  "errorMessage": zod.string().nullish()
+  "errorMessage": zod.string().nullish(),
+  "lockedAt": zod.string().nullish(),
+  "lockedBy": zod.string().nullish()
 })
 
 

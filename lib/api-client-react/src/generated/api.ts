@@ -27,6 +27,7 @@ import type {
   ListJobAttempts200,
   ListJobs200,
   ListWebhooks200,
+  SystemMetrics,
   SystemStatus,
   TestWebhook200,
   Webhook,
@@ -503,6 +504,83 @@ export function useGetSystemStatus<TData = Awaited<ReturnType<typeof getSystemSt
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetSystemStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetSystemMetricsUrl = () => {
+
+
+
+
+  return `/api/system/metrics`
+}
+
+/**
+ * @summary Aggregate job processing metrics
+ */
+export const getSystemMetrics = async ( options?: RequestInit): Promise<SystemMetrics> => {
+
+  return customFetch<SystemMetrics>(getGetSystemMetricsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSystemMetricsQueryKey = () => {
+    return [
+    `/api/system/metrics`
+    ] as const;
+    }
+
+
+export const getGetSystemMetricsQueryOptions = <TData = Awaited<ReturnType<typeof getSystemMetrics>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSystemMetrics>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSystemMetricsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSystemMetrics>>> = ({ signal }) => getSystemMetrics({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSystemMetrics>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSystemMetricsQueryResult = NonNullable<Awaited<ReturnType<typeof getSystemMetrics>>>
+export type GetSystemMetricsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Aggregate job processing metrics
+ */
+
+export function useGetSystemMetrics<TData = Awaited<ReturnType<typeof getSystemMetrics>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSystemMetrics>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSystemMetricsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

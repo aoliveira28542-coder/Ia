@@ -35,6 +35,10 @@ export interface Job {
   updatedAt: string;
   /** @nullable */
   errorMessage?: string | null;
+  /** @nullable */
+  lockedAt?: string | null;
+  /** @nullable */
+  lockedBy?: string | null;
 }
 
 export interface JobAttempt {
@@ -54,17 +58,28 @@ export interface JobAttempt {
 
 export interface SystemStatus {
   worker: string;
+  workerId: string;
+  concurrency: number;
   queue: number;
   processing: number;
   failed: number;
   uptime: string;
   /** @nullable */
   lastHeartbeat: string | null;
-  /** @nullable */
-  currentJobId: string | null;
+  currentJobIds: string[];
   memoryMB: number;
+}
+
+export interface SystemMetrics {
+  totalJobs: number;
+  success: number;
+  failed: number;
+  cancelled: number;
   /** @nullable */
-  processingTime?: string | null;
+  avgProcessingTimeMs: number | null;
+  /** @nullable */
+  avgProcessingTime: string | null;
+  successRate: string;
 }
 
 export interface CreateJobRequest {

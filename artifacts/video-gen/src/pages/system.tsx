@@ -75,21 +75,27 @@ export default function System() {
         />
       </div>
 
-      {/* Current job */}
+      {/* Current jobs */}
       <div className="rounded-xl border border-border/40 bg-card/30 p-5 space-y-3">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Current Job</p>
-        {data?.currentJobId ? (
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <p className="text-sm font-mono text-foreground">{data.currentJobId}</p>
-            {data.processingTime && (
-              <span className="text-xs text-muted-foreground ml-auto">Running {data.processingTime}</span>
-            )}
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Active Jobs</p>
+          {data && (
+            <span className="text-xs text-muted-foreground">{data.currentJobIds.length} / {data.concurrency} slots</span>
+          )}
+        </div>
+        {data && data.currentJobIds.length > 0 ? (
+          <div className="space-y-2">
+            {data.currentJobIds.map((jobId) => (
+              <div key={jobId} className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <p className="text-sm font-mono text-foreground">{jobId}</p>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="flex items-center gap-2 text-muted-foreground/60">
             <CheckCircle2 className="w-4 h-4" />
-            <p className="text-sm">No job processing right now</p>
+            <p className="text-sm">No jobs processing right now</p>
           </div>
         )}
       </div>

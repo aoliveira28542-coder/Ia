@@ -31,6 +31,8 @@ function toJobResponse(row: typeof jobsTable.$inferSelect) {
     retryCount: row.retryCount,
     maxRetries: row.maxRetries,
     priority: row.priority,
+    lockedAt: row.lockedAt?.toISOString() ?? null,
+    lockedBy: row.lockedBy ?? null,
     errorMessage: row.errorMessage ?? null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),

@@ -22,4 +22,8 @@ export interface Job {
   updatedAt: string;
   /** @nullable */
   errorMessage?: string | null;
+  /** @nullable */
+  lockedAt?: string | null;
+  /** @nullable */
+  lockedBy?: string | null;
 }

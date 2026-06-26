@@ -15,6 +15,7 @@ export * from './jobStatus';
 export * from './listJobAttempts200';
 export * from './listJobs200';
 export * from './listWebhooks200';
+export * from './systemMetrics';
 export * from './systemStatus';
 export * from './testWebhook200';
 export * from './webhook';

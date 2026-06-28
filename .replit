@@ -1,24 +1,10 @@
-modules = ["nodejs-24", "python-3.11"]
+run = "bash start.sh"
 
-[deployment]
-router = "application"
-deploymentTarget = "autoscale"
-
-[deployment.postBuild]
-args = ["pnpm", "store", "prune"]
-env = { "CI" = "true" }
-
-[workflows]
-runButton = "Project"
-
-[agent]
-stack = "PNPM_WORKSPACE"
-expertMode = true
-
-[postMerge]
-path = "scripts/post-merge.sh"
-timeoutMs = 20000
+[[ports]]
+localPort = 3008
+externalPort = 3008
+protocol = "http"
+visibility = "public"
 
 [nix]
-packages = ["python39Packages.uvicorn", "yakut"]
-channel = "stable-25_05"
+packages = ["nodejs-slim-16_x", "nodejs-12_x"]

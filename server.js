@@ -1,15 +1,23 @@
 const express = require("express");
 const app = express();
 
-app.use(express.json());
-
-app.get("/", (req,res)=>{
-  res.send("SAAS ONLINE OK");
+/* HEALTH CHECK (Render usa isso pra validar boot) */
+app.get("/", (req, res) => {
+  res.send("OK - SERVER ONLINE");
 });
 
-app.get("/status",(req,res)=>{
-  res.json({ok:true,time:Date.now()});
+/* STATUS REAL */
+app.get("/status", (req, res) => {
+  res.json({
+    ok: true,
+    uptime: process.uptime(),
+    time: Date.now()
+  });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, ()=>console.log("RUNNING ON",PORT));
+/* RENDER PORT FIX (OBRIGATÓRIO) */
+const PORT = process.env.PORT;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log("RUNNING ON PORT", PORT);
+});

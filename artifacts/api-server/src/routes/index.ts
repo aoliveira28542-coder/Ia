@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
-import jobsRouter from "./jobs";
+import { jobsRouter } from "./jobs";
 import webhooksRouter from "./webhooks";
 import systemRouter from "./system";
 import presetsRouter from "./presets";

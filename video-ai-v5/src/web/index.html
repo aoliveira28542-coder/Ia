@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Video AI V5</title>
+</head>
+<body>
+  <h1>🎬 Video AI V5</h1>
+  <div id="jobs"></div>
+
+  <script>
+    async function load() {
+      const res = await fetch("http://localhost:3000/jobs");
+      const data = await res.json();
+
+      document.getElementById("jobs").innerHTML =
+        data.map(j =>
+          `<p>${j.prompt} - ${j.status} - ${j.progress}%</p>`
+        ).join("");
+    }
+
+    setInterval(load, 1000);
+    load();
+  </script>
+</body>
+</html>

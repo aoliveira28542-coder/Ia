@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
-import { db, charactersTable } from "@workspace/db";
+import { db, charactersTable } from "../../db/src";
 import {
   ListCharactersResponse,
   GetCharacterResponse,
@@ -11,7 +11,7 @@ import {
   GetCharacterParams,
   UpdateCharacterParams,
   DeleteCharacterParams,
-} from "@workspace/api-zod";
+} from "../../api-zod/src";
 import { randomUUID } from "crypto";
 
 const router: IRouter = Router();

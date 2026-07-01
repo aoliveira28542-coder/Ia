@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
-import { db, webhooksTable } from "@workspace/db";
+import { db, webhooksTable } from "../../db/src";
 import {
   CreateWebhookBody,
   DeleteWebhookParams,
@@ -8,7 +8,7 @@ import {
   ListWebhooksResponse,
   CreateWebhookResponse,
   TestWebhookResponse,
-} from "@workspace/api-zod";
+} from "../../api-zod/src";
 import { randomUUID } from "crypto";
 import { logger } from "../lib/logger";
 

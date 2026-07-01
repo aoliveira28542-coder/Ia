@@ -1,8 +1,8 @@
 import { Router, type IRouter } from "express";
 import { eq, count, avg, sql } from "drizzle-orm";
-import { db, jobsTable, jobAttemptsTable } from "@workspace/db";
+import { db, jobsTable, jobAttemptsTable } from "../../db/src";
 import { getWorkerStatus } from "../lib/queue-worker";
-import { GetSystemStatusResponse, GetSystemMetricsResponse } from "@workspace/api-zod";
+import { GetSystemStatusResponse, GetSystemMetricsResponse } from "../../api-zod/src";
 
 const router: IRouter = Router();
 

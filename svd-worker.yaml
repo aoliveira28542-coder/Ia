@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svd-gpu-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: svd-worker
+  template:
+    metadata:
+      labels:
+        app: svd-worker
+    spec:
+      containers:
+      - name: svd
+        image: pytorch/pytorch:2.1.0-cuda11.8-cudnn8-runtime
+        command: ["python"]
+        args:
+          - -c
+          - |
+            from diffusers import StableVideoDiffusionPipeline
+            import torch
+            print("🔥 SVD GPU WORKER READY")
+        resources:
+          limits:
+            nvidia.com/gpu: 1

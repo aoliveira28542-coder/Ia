@@ -1,0 +1,18 @@
+#!/bin/bash
+
+echo "🧠 RUNWAY SAFE EXEC V2 AI GUARD"
+echo "CMD: $*"
+
+if [ -z "$*" ]; then
+  echo "❌ comando vazio"
+  exit 1
+fi
+
+if [ "$RUNWAY_EXEC_FORCE" != "1" ]; then
+  echo "🧪 DRY RUN MODE"
+  echo "Use: RUNWAY_EXEC_FORCE=1 ./runway-v2 <cmd>"
+  exit 0
+fi
+
+echo "⚡ EXECUTANDO"
+bash -c "$*"

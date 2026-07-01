@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>SaaS Dashboard</h2>
+<pre id="out"></pre>
+
+<script>
+async function load(){
+  const r = await fetch("/jobs", {
+    headers: { Authorization: "Bearer demo" }
+  });
+  const d = await r.json();
+  document.getElementById("out").textContent =
+    JSON.stringify(d,null,2);
+}
+setInterval(load,1000);
+load();
+</script>
+
+</body>
+</html>

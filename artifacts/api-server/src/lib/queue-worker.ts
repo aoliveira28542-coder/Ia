@@ -1,5 +1,5 @@
 import { eq, or, count, desc, asc, and, lt, inArray } from "drizzle-orm";
-import { db, jobsTable, jobAttemptsTable, webhooksTable, assetsTable } from "@workspace/db";
+import { db, jobsTable, jobAttemptsTable, webhooksTable, assetsTable } from "../../db/src";
 import { logger } from "./logger";
 import { randomUUID } from "crypto";
 import { storage } from "./storage/local";

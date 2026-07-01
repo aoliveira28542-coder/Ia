@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, or } from "drizzle-orm";
-import { db, presetsTable } from "@workspace/db";
+import { db, presetsTable } from "../../db/src";
 import {
   ListPresetsResponse,
   GetPresetResponse,
@@ -8,7 +8,7 @@ import {
   CreatePresetBody,
   GetPresetParams,
   DeletePresetParams,
-} from "@workspace/api-zod";
+} from "../../api-zod/src";
 import { randomUUID } from "crypto";
 
 const router: IRouter = Router();

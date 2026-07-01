@@ -1,0 +1,27 @@
+function createAIPlan(prompt){
+
+return {
+prompt,
+style:"cinematic",
+scenes:[
+{
+id:1,
+text:"opening",
+duration:3
+},
+{
+id:2,
+text:"main action",
+duration:3
+},
+{
+id:3,
+text:"ending",
+duration:3
+}
+]
+};
+
+}
+
+module.exports=createAIPlan;

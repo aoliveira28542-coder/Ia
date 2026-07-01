@@ -1,0 +1,22 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const health_1 = __importDefault(require("./health"));
+const jobs_1 = require("./jobs");
+const webhooks_1 = __importDefault(require("./webhooks"));
+const system_1 = __importDefault(require("./system"));
+const presets_1 = __importDefault(require("./presets"));
+const characters_1 = __importDefault(require("./characters"));
+const uploads_1 = __importDefault(require("./uploads"));
+const router = (0, express_1.Router)();
+router.use(health_1.default);
+router.use(jobs_1.jobsRouter);
+router.use(webhooks_1.default);
+router.use(system_1.default);
+router.use(presets_1.default);
+router.use(characters_1.default);
+router.use(uploads_1.default);
+exports.default = router;

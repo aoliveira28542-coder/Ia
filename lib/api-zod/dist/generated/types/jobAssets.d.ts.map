@@ -1,0 +1,1 @@
+{"version":3,"file":"jobAssets.d.ts","sourceRoot":"","sources":["../../../src/generated/types/jobAssets.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AACH,OAAO,KAAK,EAAE,KAAK,EAAE,MAAM,SAAS,CAAC;AAErC,MAAM,WAAW,SAAS;IACxB,MAAM,EAAE,KAAK,EAAE,CAAC;IAChB,gBAAgB;IAChB,KAAK,EAAE,MAAM,GAAG,IAAI,CAAC;IACrB,gBAAgB;IAChB,SAAS,EAAE,MAAM,GAAG,IAAI,CAAC;CAC1B"}
